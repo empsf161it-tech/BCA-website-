@@ -1,0 +1,17 @@
+{% extends "base_public.html" %}
+{% block title %}Admin login{% endblock %}
+{% block page %}admin-login{% endblock %}
+{% block content %}
+<h1>Admin sign in</h1>
+<p class="muted">Administrators can manage accounts but cannot see reminders or locations.</p>
+<form method="post" action="{{ url_for('admin_login') }}" class="form" novalidate>
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <label for="username">Username</label>
+  <input id="username" name="username" type="text" autocomplete="username" required>
+  <label for="password">Password</label>
+  <input id="password" name="password" type="password" autocomplete="current-password" required>
+  <button id="admin-login-submit" class="btn btn-primary btn-block" type="submit">Sign in</button>
+</form>
+<p class="auth-alt small"><a href="{{ url_for('login') }}">← Back to user login</a></p>
+<div class="demo-note">Demo admin: <code>admin</code> / <code>Admin@1234</code></div>
+{% endblock %}

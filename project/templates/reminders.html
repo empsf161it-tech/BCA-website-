@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% from "_macros.html" import reminder_row %}
+{% block title %}Reminders{% endblock %}
+{% block heading %}Reminders{% endblock %}
+{% block page %}reminders{% endblock %}
+
+{% block content %}
+<div class="two-col">
+  <!-- Create / edit form -->
+  <section class="card" id="reminder-form-card">
+    <h2>{{ 'Edit reminder' if editing else 'New reminder' }}</h2>
+    <form method="post" action="{{ url_for('reminder_save') }}" class="form" id="reminderForm" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <input type="hidden" name="filter" value="{{ flt }}">
+      {% if editing %}<input type="hidden" name="reminder_id" value="{{ editing.reminder_id }}">{% endif %}
+
+      <label for="title">Title</label>
+      <input id="title" name="title" type="text" maxlength="120" required value="{{ form.get('title', '') }}">
+
+      <label for="description">Description <span class="muted">(optional)</span></label>
+      <textarea id="description" name="description" rows="3" maxlength="1000">{{ form.get('description', '') or '' }}</textarea>
+
+      <div class="grid-2">
+        <div>
+          <label for="reminder_type">Type</label>
+          <select id="reminder_type" name="reminder_type">
+            {% for t in ('task', 'event', 'recurring') %}
+              <option value="{{ t }}" {{ 'selected' if form.get('reminder_type', 'task') == t }}>{{ t|capitalize }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div id="recurrenceRow" hidden>
+          <label for="recurrence_rule">Repeats</label>
+          <select id="recurrence_rule" name="recurrence_rule">
+            {% for rule in ('daily', 'weekly', 'monthly') %}
+              <option value="{{ rule }}" {{ 'selected' if form.get('recurrence_rule') == rule }}>{{ rule|capitalize }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <label for="due_at">Due Time</label>
+          <div style="display:flex;gap:0.3rem;margin-bottom:0.4rem;flex-wrap:wrap;">
+            <button type="button" class="btn btn-ghost btn-sm quick-time-btn" data-min="5">+5 min</button>
+            <button type="button" class="btn btn-ghost btn-sm quick-time-btn" data-min="10">+10 min</button>
+            <button type="button" class="btn btn-ghost btn-sm quick-time-btn" data-min="15">+15 min</button>
+            <button type="button" class="btn btn-ghost btn-sm quick-time-btn" data-min="30">+30 min</button>
+            <button type="button" class="btn btn-ghost btn-sm quick-time-btn" data-min="60">+1 hr</button>
+          </div>
+          <input id="due_at" name="due_at" type="datetime-local" required value="{{ form.get('due_at', '')|dt_input }}">
+        </div>
+        <div>
+          <label for="notify_before_min">Early warning (min)</label>
+          <input id="notify_before_min" name="notify_before_min" type="number" min="0" max="10080" value="{{ form.get('notify_before_min', 0) }}">
+          <small class="hint">0 = ring alarm when time completes (e.g. after 5 min)</small>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button id="reminder-save" class="btn btn-primary" type="submit">{{ 'Save changes' if editing else 'Add reminder' }}</button>
+        {% if editing %}<a class="btn btn-ghost" href="{{ url_for('reminders_page', filter=flt) }}">Cancel edit</a>{% endif %}
+      </div>
+    </form>
+  </section>
+
+  <!-- List with filters -->
+  <section class="card" id="reminder-list-card">
+    <div class="tabs" role="tablist">
+      {% for key, label in (('today', 'Today'), ('upcoming', 'Upcoming'), ('completed', 'Completed'), ('all', 'All')) %}
+        <a id="filter-{{ key }}" role="tab" class="tab {{ 'active' if flt == key }}"
+           href="{{ url_for('reminders_page', filter=key) }}">{{ label }}</a>
+      {% endfor %}
+    </div>
+    {% if reminders %}
+      <ul class="reminder-list">
+        {% for r in reminders %}{{ reminder_row(r, snooze_choices) }}{% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">No reminders in this view.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/reminders.js') }}"></script>{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Emergency Contacts{% endblock %}
+{% block heading %}Emergency contacts{% endblock %}
+{% block page %}contacts{% endblock %}
+
+{% block content %}
+<div class="two-col">
+  <section class="card" id="contact-form-card">
+    <h2>{{ 'Edit contact' if editing else 'Add contact' }}</h2>
+    <form method="post" action="{{ url_for('contact_save') }}" class="form" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      {% if editing %}<input type="hidden" name="contact_id" value="{{ editing.contact_id }}">{% endif %}
+
+      <label for="contact_name">Name</label>
+      <input id="contact_name" name="contact_name" type="text" maxlength="100" required value="{{ form.get('contact_name', '') }}">
+
+      <label for="phone">Phone <span class="muted">(7-15 digits)</span></label>
+      <input id="phone" name="phone" type="tel" required placeholder="+91 98765 43210" value="{{ form.get('phone', '') }}">
+
+      <label for="email">Email <span class="muted">(optional)</span></label>
+      <input id="email" name="email" type="email" value="{{ form.get('email', '') or '' }}">
+
+      <div class="grid-2">
+        <div>
+          <label for="relationship">Relationship</label>
+          <input id="relationship" name="relationship" type="text" maxlength="50" placeholder="Mother, Friend…" value="{{ form.get('relationship', '') or '' }}">
+        </div>
+        <div>
+          <label for="priority">Priority <span class="muted">(1 = first)</span></label>
+          <input id="priority" name="priority" type="number" min="1" max="99" required value="{{ form.get('priority', contacts|length + 1) }}">
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button id="contact-save" class="btn btn-primary" type="submit">{{ 'Save changes' if editing else 'Add contact' }}</button>
+        {% if editing %}<a class="btn btn-ghost" href="{{ url_for('contacts_page') }}">Cancel edit</a>{% endif %}
+      </div>
+    </form>
+  </section>
+
+  <section class="card" id="contact-list-card">
+    <h2>Contacted in this order</h2>
+    {% if contacts %}
+      <ol class="contact-list">
+        {% for c in contacts %}
+        <li>
+          <span class="avatar">{{ c.priority }}</span>
+          <div class="contact-info">
+            <strong>{{ c.contact_name }}</strong>
+            <small>{{ c.relationship or 'Contact' }}</small>
+            <small>📞 {{ c.phone }}{% if c.email %} · ✉ {{ c.email }}{% endif %}</small>
+          </div>
+          <div class="reminder-actions secondary">
+            <a class="btn btn-ghost btn-sm" href="{{ url_for('contacts_page', edit=c.contact_id) }}">Edit</a>
+            <form method="post" action="{{ url_for('contact_delete', contact_id=c.contact_id) }}" data-confirm="Delete {{ c.contact_name }} from your emergency contacts?">
+              <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+              <button class="btn btn-danger-ghost btn-sm" type="submit">Delete</button>
+            </form>
+          </div>
+        </li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <p class="empty">No emergency contacts yet. Add the people who should be alerted during an SOS.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

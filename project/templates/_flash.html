@@ -1,0 +1,12 @@
+{# Flash messages (success / error). Jinja auto-escapes the text. #}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flashes">
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}" role="alert">
+          <span>{{ '✔' if category == 'success' else '⚠' }}</span> {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}

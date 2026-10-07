@@ -1,0 +1,50 @@
+{# Reusable reminder row. `compact` hides edit/cancel/delete (used on the dashboard). #}
+{% macro reminder_row(r, snooze_choices, compact=False) %}
+<li class="reminder {{ 'is-overdue' if r.overdue }} status-{{ r.status }}">
+  <div class="reminder-main">
+    <div class="reminder-title">
+      <strong>{{ r.title }}</strong>
+      <span class="badge badge-{{ r.reminder_type }}">{{ r.reminder_type }}</span>
+      {% if r.recurrence_rule %}<span class="badge badge-soft">🔁 {{ r.recurrence_rule }}</span>{% endif %}
+      {% if r.status != 'pending' %}<span class="badge badge-{{ r.status }}">{{ r.status }}</span>{% endif %}
+      {% if r.overdue %}<span class="badge badge-danger">overdue</span>{% endif %}
+    </div>
+    {% if r.description %}<p class="muted">{{ r.description }}</p>{% endif %}
+    <small class="muted">⏰ {{ r.due_at|pretty_dt }} · notify {{ r.notify_before_min }} min before</small>
+  </div>
+
+  {% if r.status in ('pending', 'snoozed') %}
+  <div class="reminder-actions">
+    <form method="post" action="{{ url_for('reminder_complete', reminder_id=r.reminder_id) }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <button class="btn btn-success btn-sm" type="submit" title="Mark complete">✔ Done</button>
+    </form>
+    <form method="post" class="inline-form" action="{{ url_for('reminder_snooze', reminder_id=r.reminder_id) }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <select name="minutes" aria-label="Snooze for" class="select-sm">
+        {% for m in snooze_choices %}
+          <option value="{{ m }}" {{ 'selected' if m == 10 }}>{{ m|snooze_label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-soft btn-sm" type="submit">💤 Snooze</button>
+    </form>
+  </div>
+  {% endif %}
+
+  {% if not compact %}
+  <div class="reminder-actions secondary">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('reminders_page', edit=r.reminder_id) }}">Edit</a>
+    {% if r.status in ('pending', 'snoozed') %}
+    <form method="post" action="{{ url_for('reminder_cancel', reminder_id=r.reminder_id) }}" data-confirm="Cancel this reminder?">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <button class="btn btn-ghost btn-sm" type="submit">Cancel</button>
+    </form>
+    {% endif %}
+    <form method="post" action="{{ url_for('reminder_delete', reminder_id=r.reminder_id) }}" data-confirm="Delete this reminder permanently?">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <button class="btn btn-danger-ghost btn-sm" type="submit">Delete</button>
+    </form>
+  </div>
+  {% endif %}
+</li>
+{% endmacro %}

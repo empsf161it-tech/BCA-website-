@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Share Location{% endblock %}
+{% block heading %}Share my location{% endblock %}
+{% block page %}location{% endblock %}
+
+{% block content %}
+<section class="card loc-widget narrow" id="location-card">
+  <h2>One-time location link</h2>
+  <p class="muted">Your location is captured <strong>only when you press the button</strong>. It is never tracked in the background, and the coordinates are not stored on our server.</p>
+  <button id="shareLocationBtn" class="btn btn-primary loc-btn" type="button">📍 Share My Location</button>
+  <div class="loc-result" hidden></div>
+</section>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/location.js') }}"></script>{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}History{% endblock %}
+{% block heading %}Activity history{% endblock %}
+{% block page %}history{% endblock %}
+
+{% block content %}
+<section class="card">
+  <form method="get" action="{{ url_for('history_page') }}" class="filters" id="historyFilters">
+    <div>
+      <label for="type">Type</label>
+      <select id="type" name="type">
+        <option value="">All</option>
+        {% for t in types %}<option value="{{ t }}" {{ 'selected' if f_type == t }}>{{ t|capitalize }}</option>{% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="from">From</label>
+      <input id="from" name="from" type="date" value="{{ date_from }}">
+    </div>
+    <div>
+      <label for="to">To</label>
+      <input id="to" name="to" type="date" value="{{ date_to }}">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" type="submit">Filter</button>
+      <a class="btn btn-ghost" href="{{ url_for('history_page') }}">Reset</a>
+    </div>
+  </form>
+  <p class="hint">History is append-only: entries cannot be edited or deleted.</p>
+
+  {% if entries %}
+    <ul class="timeline">
+      {% for h in entries %}
+      <li>
+        <span class="dot dot-{{ h.activity_type }}"></span>
+        <div>
+          <div class="timeline-head">
+            <span class="badge badge-h-{{ h.activity_type }}">{{ h.activity_type }}</span>
+            <small class="muted">{{ h.created_at|pretty_dt }}</small>
+          </div>
+          <p>{{ h.details }}</p>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="empty">No history entries match your filters.</p>
+  {% endif %}
+</section>
+{% endblock %}

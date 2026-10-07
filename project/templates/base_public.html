@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Welcome{% endblock %} · Smart Reminder &amp; Protection</title>
+  <meta name="description" content="Smart Reminder and Personal Protection System: sign in to manage reminders, emergency contacts and SOS alerts.">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body data-auth="0" data-page="{% block page %}public{% endblock %}">
+{% block shell %}
+<div class="auth-wrap">
+  <div class="auth-hero">
+    <div class="brand-mark big">🛡️</div>
+    <h2>Smart Reminder<br>&amp; Personal Protection</h2>
+    <p>Never miss what matters. One tap to reach the people who can help.</p>
+    <ul class="hero-points">
+      <li>⏰ Smart reminders with recurring schedules</li>
+      <li>🚨 5-second SOS with live status steps</li>
+      <li>📍 Location shared only when you ask</li>
+    </ul>
+  </div>
+  <div class="auth-card">
+    {% include "_flash.html" %}
+    {% block content %}{% endblock %}
+  </div>
+</div>
+{% endblock %}
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

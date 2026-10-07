@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}SOS{% endblock %}
+{% block heading %}Emergency SOS{% endblock %}
+{% block page %}sos{% endblock %}
+
+{% block content %}
+<div class="two-col">
+  <section class="card card-sos center" id="sos-main">
+    <h2>Press only in an emergency</h2>
+    <p class="muted">A {{ countdown }}-second countdown starts. You can cancel before it ends. Then we capture your location (if you allow it) and alert your contacts.</p>
+    <button id="sosBigBtn" class="sos-big sos-trigger" type="button" aria-label="Send SOS emergency alert">SOS</button>
+    {% if contact_count == 0 %}
+      <p class="hint warn">⚠ You have no emergency contacts. <a href="{{ url_for('contacts_page') }}">Add one now</a>.</p>
+    {% else %}
+      <p class="hint">{{ contact_count }} contact{{ 's' if contact_count != 1 }} will be alerted.</p>
+    {% endif %}
+    <p class="hint">Demo mode: alerts are logged and shown on screen, not sent by SMS/email.</p>
+  </section>
+
+  <section class="card" id="sos-events">
+    <h2>Recent SOS events</h2>
+    {% if events %}
+      <ul class="event-list">
+        {% for e in events %}
+        <li>
+          <div class="event-head">
+            <span class="badge badge-sos-{{ e.status }}">{{ e.status }}</span>
+            <small class="muted">{{ e.triggered_at|pretty_dt }}</small>
+          </div>
+          {% if e.latitude is not none %}
+            <small>📍 <a href="{{ maps_link(e.latitude, e.longitude) }}" target="_blank" rel="noopener noreferrer">View on map</a></small>
+          {% endif %}
+          {% if e.message %}
+            <details><summary>View message</summary><pre class="message-box">{{ e.message }}</pre></details>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">No SOS events yet.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

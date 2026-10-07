@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Dashboard{% endblock %} · Smart Reminder &amp; Protection</title>
+  <meta name="description" content="Smart Reminder and Personal Protection System: reminders, emergency contacts, SOS alerts and on-demand location sharing.">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body data-auth="1" data-page="{% block page %}{% endblock %}">
+{% set ep = request.endpoint %}
+<div class="app">
+
+  <!-- ============ Sidebar ============ -->
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <div class="brand">
+      <span class="brand-mark">🛡️</span>
+      <span class="brand-text">Smart Reminder<small>&amp; Protection</small></span>
+    </div>
+    <nav class="nav">
+      <a id="nav-dashboard" href="{{ url_for('dashboard') }}" class="{{ 'active' if ep == 'dashboard' }}"><span>🏠</span> Dashboard</a>
+      <a id="nav-reminders" href="{{ url_for('reminders_page') }}" class="{{ 'active' if ep == 'reminders_page' }}"><span>⏰</span> Reminders</a>
+      <a id="nav-contacts" href="{{ url_for('contacts_page') }}" class="{{ 'active' if ep == 'contacts_page' }}"><span>👥</span> Emergency Contacts</a>
+      <a id="nav-sos" href="{{ url_for('sos_page') }}" class="{{ 'active' if ep == 'sos_page' }}"><span>🚨</span> SOS</a>
+      <a id="nav-location" href="{{ url_for('location_page') }}" class="{{ 'active' if ep == 'location_page' }}"><span>📍</span> Share Location</a>
+      <a id="nav-history" href="{{ url_for('history_page') }}" class="{{ 'active' if ep == 'history_page' }}"><span>🕘</span> History</a>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="user-chip">
+        <span class="avatar">{{ g.user.full_name[0]|upper }}</span>
+        <div><strong>{{ g.user.full_name }}</strong><small>{{ g.user.email }}</small></div>
+      </div>
+      <form method="post" action="{{ url_for('logout') }}">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <button id="logout-btn" class="btn btn-ghost btn-block" type="submit">Log out</button>
+      </form>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <!-- ============ Main ============ -->
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menuBtn" aria-label="Open menu">☰</button>
+      <h1>{% block heading %}Dashboard{% endblock %}</h1>
+      <div style="display:flex;gap:0.5rem;align-items:center;">
+        <button class="btn btn-ghost btn-sm" id="testAlarmBtn" type="button" title="Test alarm sound">🔊 Test Alarm</button>
+        <button class="btn btn-soft btn-sm" id="enableAlertsBtn" type="button" hidden>🔔 Enable alerts</button>
+      </div>
+    </header>
+
+    <main class="content">
+      {% include "_flash.html" %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+
+<!-- ============ Alarm modal (when reminder time is completed) ============ -->
+<div class="alarm-overlay" id="alarmModal" hidden role="dialog" aria-modal="true" aria-labelledby="alarmTitle">
+  <div class="alarm-card">
+    <div class="alarm-icon-pulse">⏰</div>
+    <h2>Time is Up!</h2>
+    <p id="alarmTitle" class="alarm-reminder-title">Reminder Title</p>
+    <p class="muted" id="alarmSubtext">Your scheduled reminder time has completed.</p>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-primary" id="alarmDismissBtn" type="button">Stop Alarm</button>
+      <a class="btn btn-ghost" href="{{ url_for('reminders_page') }}">View Reminders</a>
+    </div>
+  </div>
+</div>
+
+<!-- Always-visible SOS button (works on every page) -->
+<button id="sosFab" class="sos-fab sos-trigger" type="button" aria-label="Send SOS emergency alert">SOS</button>
+
+<!-- ============ SOS overlay ============ -->
+<div class="sos-overlay" id="sosOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="sosTitle">
+  <div class="sos-modal">
+    <h2 id="sosTitle">🚨 Emergency SOS</h2>
+
+    <!-- View 1: countdown -->
+    <div id="sosViewCountdown">
+      <p>Alert will be sent in</p>
+      <div class="countdown" id="sosCountdown">5</div>
+      <p class="muted">Pressed by mistake? Cancel now.</p>
+      <button id="sosCancelBtn" class="btn btn-cancel btn-block" type="button">CANCEL</button>
+    </div>
+
+    <!-- View 2: step-by-step progress -->
+    <div id="sosViewProgress" hidden>
+      <ul class="steps" id="sosSteps">
+        <li data-step="confirmed"><i></i><span>Emergency confirmed</span></li>
+        <li data-step="location"><i></i><span>Location captured</span></li>
+        <li data-step="contacts"><i></i><span>Emergency contacts retrieved</span></li>
+        <li data-step="dispatch"><i></i><span>Alert dispatched</span></li>
+        <li data-step="record"><i></i><span>Event recorded</span></li>
+      </ul>
+      <div id="sosResult" hidden>
+        <h3>Message sent (demo log)</h3>
+        <pre class="message-box" id="sosMessage"></pre>
+        <ul class="recipients" id="sosRecipients"></ul>
+      </div>
+      <button id="sosCloseBtn" class="btn btn-primary btn-block" type="button" hidden>Close</button>
+    </div>
+
+    <!-- View 3: cancelled -->
+    <div id="sosViewCancelled" hidden>
+      <p class="big-ok">✔ SOS cancelled</p>
+      <p class="muted">The cancellation was recorded in your history. No alert was sent.</p>
+      <button id="sosCancelledClose" class="btn btn-primary btn-block" type="button">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/sos.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,61 @@
+{% extends "base_public.html" %}
+{% block title %}Admin{% endblock %}
+{% block page %}admin{% endblock %}
+{% block shell %}
+<div class="admin-wrap">
+  <header class="admin-top">
+    <div class="brand"><span class="brand-mark">🛡️</span><span class="brand-text">Admin console<small>signed in as {{ admin.username }}</small></span></div>
+    <form method="post" action="{{ url_for('admin_logout') }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <button id="admin-logout" class="btn btn-ghost" type="submit">Log out</button>
+    </form>
+  </header>
+
+  <main class="content">
+    {% include "_flash.html" %}
+    <h1>Users &amp; activity</h1>
+    <p class="muted">For privacy, admins only see account details and activity <em>counts</em>. Reminder content and locations are never shown here.</p>
+
+    <section class="stats">
+      <div class="stat"><span class="stat-num">{{ totals.users }}</span><span>Users</span></div>
+      <div class="stat"><span class="stat-num">{{ totals.active }}</span><span>Active</span></div>
+      <div class="stat"><span class="stat-num">{{ totals.reminders }}</span><span>Reminders (total)</span></div>
+      <div class="stat"><span class="stat-num">{{ totals.sos }}</span><span>SOS alerts (total)</span></div>
+    </section>
+
+    <section class="card table-card">
+      <div class="table-scroll">
+        <table class="table" id="usersTable">
+          <thead>
+            <tr><th>User</th><th>Joined</th><th>Reminders</th><th>Contacts</th><th>SOS</th><th>Activity</th><th>Status</th><th></th></tr>
+          </thead>
+          <tbody>
+          {% for u in users %}
+            <tr>
+              <td><strong>{{ u.full_name }}</strong><small class="block muted">{{ u.email }}</small></td>
+              <td>{{ u.created_at|pretty_dt }}</td>
+              <td>{{ u.reminder_count }}</td>
+              <td>{{ u.contact_count }}</td>
+              <td>{{ u.sos_count }}</td>
+              <td>{{ u.activity_count }}</td>
+              <td><span class="badge {{ 'badge-completed' if u.is_active else 'badge-cancelled' }}">{{ 'active' if u.is_active else 'deactivated' }}</span></td>
+              <td>
+                <form method="post" action="{{ url_for('admin_toggle_user', user_id=u.user_id) }}"
+                      data-confirm="{{ 'Deactivate' if u.is_active else 'Activate' }} {{ u.full_name }}?">
+                  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+                  <button class="btn btn-sm {{ 'btn-danger-ghost' if u.is_active else 'btn-success' }}" type="submit">
+                    {{ 'Deactivate' if u.is_active else 'Activate' }}
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="8" class="empty">No users yet.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+{% endblock %}

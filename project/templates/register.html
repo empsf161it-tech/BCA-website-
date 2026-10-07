@@ -1,0 +1,29 @@
+{% extends "base_public.html" %}
+{% block title %}Create account{% endblock %}
+{% block page %}register{% endblock %}
+{% block content %}
+<h1>Create your account</h1>
+<p class="muted">It takes less than a minute.</p>
+<form method="post" action="{{ url_for('register') }}" class="form" novalidate>
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <label for="full_name">Full name</label>
+  <input id="full_name" name="full_name" type="text" maxlength="100" required value="{{ form.get('full_name', '') }}">
+  <label for="email">Email</label>
+  <input id="email" name="email" type="email" autocomplete="email" required value="{{ form.get('email', '') }}">
+  <label for="phone">Phone <span class="muted">(optional, 7-15 digits)</span></label>
+  <input id="phone" name="phone" type="tel" placeholder="+91 98765 43210" value="{{ form.get('phone', '') }}">
+  <div class="grid-2">
+    <div>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" minlength="8" autocomplete="new-password" required>
+    </div>
+    <div>
+      <label for="confirm_password">Confirm</label>
+      <input id="confirm_password" name="confirm_password" type="password" minlength="8" autocomplete="new-password" required>
+    </div>
+  </div>
+  <p class="hint">Use at least 8 characters.</p>
+  <button id="register-submit" class="btn btn-primary btn-block" type="submit">Register</button>
+</form>
+<p class="auth-alt">Already registered? <a href="{{ url_for('login') }}">Log in</a></p>
+{% endblock %}

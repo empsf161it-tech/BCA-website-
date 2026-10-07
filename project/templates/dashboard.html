@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% from "_macros.html" import reminder_row %}
+{% block title %}Dashboard{% endblock %}
+{% block heading %}Hello, {{ g.user.full_name.split(' ')[0] }} 👋{% endblock %}
+{% block page %}dashboard{% endblock %}
+
+{% block content %}
+<section class="stats" aria-label="Summary">
+  <div class="stat"><span class="stat-num">{{ stats.active }}</span><span>Active reminders</span></div>
+  <div class="stat"><span class="stat-num">{{ stats.done }}</span><span>Completed</span></div>
+  <div class="stat"><span class="stat-num">{{ stats.contacts }}</span><span>Emergency contacts</span></div>
+  <div class="stat"><span class="stat-num">{{ stats.sos }}</span><span>SOS alerts sent</span></div>
+</section>
+
+<div class="grid-dash">
+  <!-- Today's reminders -->
+  <section class="card span-2" id="today-card">
+    <div class="card-head">
+      <h2>Today's reminders</h2>
+      <a class="link" href="{{ url_for('reminders_page') }}">Manage →</a>
+    </div>
+    {% if today %}
+      <ul class="reminder-list">
+        {% for r in today %}{{ reminder_row(r, snooze_choices, compact=True) }}{% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">🎉 Nothing due today. <a href="{{ url_for('reminders_page') }}">Add a reminder</a></p>
+    {% endif %}
+  </section>
+
+  <!-- SOS -->
+  <section class="card card-sos" id="sos-card">
+    <h2>Emergency SOS</h2>
+    <p class="muted">Sends your location to your emergency contacts after a 5-second countdown.</p>
+    <button class="sos-big sos-trigger" type="button" aria-label="Send SOS emergency alert">SOS</button>
+    {% if stats.contacts == 0 %}
+      <p class="hint warn">⚠ No contacts saved. <a href="{{ url_for('contacts_page') }}">Add one</a> so alerts reach someone.</p>
+    {% endif %}
+  </section>
+
+  <!-- Upcoming -->
+  <section class="card span-2" id="upcoming-card">
+    <div class="card-head">
+      <h2>Upcoming</h2>
+      <a class="link" href="{{ url_for('reminders_page', filter='upcoming') }}">See all →</a>
+    </div>
+    {% if upcoming %}
+      <ul class="reminder-list">
+        {% for r in upcoming %}{{ reminder_row(r, snooze_choices, compact=True) }}{% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">No upcoming reminders.</p>
+    {% endif %}
+  </section>
+
+  <!-- Quick location share -->
+  <section class="card loc-widget" id="quick-location">
+    <h2>Quick location share</h2>
+    <p class="muted">Captured only when you press the button.</p>
+    <button class="btn btn-primary btn-block loc-btn" type="button">📍 Share My Location</button>
+    <div class="loc-result" hidden></div>
+  </section>
+
+  <!-- Notifications -->
+  <section class="card span-2" id="notifications">
+    <div class="card-head">
+      <h2>Notifications</h2>
+      <small class="muted">checked every 30 s</small>
+    </div>
+    <ul class="notif-list" id="notifList"><li class="empty">Checking…</li></ul>
+  </section>
+
+  <!-- Contacts -->
+  <section class="card" id="contacts-card">
+    <div class="card-head">
+      <h2>Emergency contacts</h2>
+      <a class="link" href="{{ url_for('contacts_page') }}">Manage →</a>
+    </div>
+    {% if contacts %}
+      <ul class="mini-list">
+        {% for c in contacts %}
+          <li><span class="avatar sm">{{ c.priority }}</span>
+              <div><strong>{{ c.contact_name }}</strong><small>{{ c.relationship or 'Contact' }} · {{ c.phone }}</small></div></li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">No contacts yet.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/location.js') }}"></script>{% endblock %}
