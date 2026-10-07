@@ -1,0 +1,26 @@
+# Python Virtual Environment
+venv/
+**/venv/
+.venv/
+**/.venv/
+env/
+**/env/
+
+# Bytecode & Cache
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Database & Runtime Secrets
+instance/
+**/instance/
+*.db
+*.key
+secret.key
+
+# Operating System & IDE
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
